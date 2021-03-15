@@ -1,0 +1,41 @@
+version: '3.6'
+
+services:
+    sqldata:
+        image: "microsoft/mssql-server-linux:2017-latest"
+        environment:
+            MSSQL_SA_PASSWORD: "Delivery2021BySt0n3"
+            ACCEPT_EULA: "Y"
+        networks:
+            delivery_network:
+                ipv4_address: 20.11.0.20
+        ports:
+            - "1433:1433"  
+    delivery_store_api:
+        #build: .
+        build:
+            context: .
+            dockerfile: src/Services/Delivery.Store.Api/Dockerfile
+        ports:
+            - 32778:80
+            - 32779:443
+        depends_on:
+            - sqldata
+        networks:
+            delivery_network:
+                ipv4_address: 20.11.0.21
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - AllowedHosts=*
+            - HealthChecksUI__HealthChecks__Name=DeliveryStore
+            - HealthChecksUI__HealthChecks__Uri=http://localhost:32778/api/hc 
+            - HealthChecksUI__EvaluationTimeInSeconds=90
+            - HealthChecksUI__MinimumSecondsBetweenFailureNotifications=60
+            - ConnectionStrings__DefaultConnection=Data Source=sqldata,1433;Initial Catalog=DeliveryStore;User ID=sa;Password=Delivery2021BySt0n3
+networks: 
+    delivery_network:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 20.11.0.0/24       
