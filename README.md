@@ -18,6 +18,7 @@ Documentation API REST
 HealthCheck
 
 /api/hc
+
 /api/hc-ui
 
 ### Architecture Evolution
